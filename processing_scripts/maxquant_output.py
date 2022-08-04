@@ -18,10 +18,9 @@ def maxquant_inference(protein_ids, peptide_seq):
     return merged[['uniprot_id', 'peptide_sequence']]
 
 def maxquant_quantification(df, protein_ids):
-    '''Loads the maxquant proteinGroups file at the given file path and creates a relationship
-    mapping sample names to uniprot IDs, and keep LFQ intensity as an attribute. This is not the 
-    ideal relationship (in the future, we will have another inference engine translate this, not 
-    MaxQuant).'''
+    '''Creates a relationship mapping sample names to uniprot IDs, and keep LFQ intensity as 
+    an attribute. This is not the ideal relationship (in the future, we will have another inference 
+    engine translate this, not MaxQuant).'''
     # pull out the unique sample names in this experiment 
     sample_names = [name[9:] for name in df.columns[df.columns.str.contains('Peptides ')]]
     
