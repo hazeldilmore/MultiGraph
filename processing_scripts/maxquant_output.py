@@ -7,14 +7,14 @@ def maxquant_inference(path, experiment_id):
     
     # expand the protein and peptide ID mapping
     protein_ids = df['Protein IDs'].str.split(';', expand=True).stack().reset_index()
-    peptide_ids = df['Peptide IDs'].str.split(';', expand=True).stack().reset_index()
+    peptide_seq = df['Peptide sequences'].str.split(';', expand=True).stack().reset_index()
     
     # rename columns to more accurately reflect what they are 
     protein_ids.rename(columns={0:'uniprot_id'}, inplace=True)
-    peptide_ids.rename(columns={0:'peptide_id'}, inplace=True)
+    peptide_seq.rename(columns={0:'peptide_sequence'}, inplace=True)
     
     # inner join on level_0 which represents original index of df
-    merged = peptide_ids[['level_0', 'peptide_id']].merge(protein_ids[['level_0', 'uniprot_id']],
-                                                          right_on='level_0', left_on='level_0')
+    merged = peptide_seq[['level_0', 'peptide_sequence']].merge(protein_ids[['level_0', 'uniprot_id']],
+								right_on='level_0', left_on='level_0')
     merged['experiment_id'] = experiment_id
-    return merged[['uniprot_id', 'peptide_id', 'experiment_id']]
+    return merged[['uniprot_id', 'peptide_sequence', 'experiment_id']]
