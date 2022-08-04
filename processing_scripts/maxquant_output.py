@@ -1,3 +1,5 @@
+import pandas as pd
+
 def expand_column(df, col, sep=';'):
     '''Helper function to expand columns that contain lists separated by semicolons'''
     return df[col].str.split(sep, expand=True).stack.reset_index()
