@@ -11,6 +11,10 @@ def sql_to_dataframe(query, connection):
     '''Runs SQL query on given db connection, outputs pd.DataFrame'''
     return pd.read_sql(query, connection)
 
+def read_msdial_file(path_to_alignment):
+    '''Read .msdial file that is output from MS-DIAL pipeline on katherine-johnson.'''
+    return pd.read_csv(path_to_alignment, sep='\t', skiprows=4, index_col='Alignment ID')
+
 def get_inchikeys(user, password):
     '''Extract InChIKey to ChEBI dataframe through chebi's structures
     relational database.'''
@@ -65,3 +69,12 @@ def make_mb_nodes_relationships(path_to_neg, path_to_pos, user='root', password=
     # make .csv corresponding to MATCHES_TO relationship
     merged_df = merge_dbs_for_conversion(all_metabolites, chebi_to_inchikey)
     merged_df.to_csv('MATCHES_TO.csv', index=False)
+
+def msdial_annotations(path_to_pos, path_to_neg):
+    # read alignment files and concatenate them
+    pos_align = read_msdial_file(path_to_pos)
+    neg_align = read_msdial_file(path_to_neg)
+    all_aligned = pd.concat([pos_align, neg_align]).reset_index(drop=True)
+
+    # save all alignments 
+    # thinking about how to handle negative/positive alignments and negative/positive in ref
