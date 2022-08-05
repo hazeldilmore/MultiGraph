@@ -33,7 +33,9 @@ def get_metabolites(path_to_pos, path_to_neg):
     # perform SQL queries to get dataframes of metabolites
     query = 'SELECT * FROM compoundPrimary'
     pos_df = sql_to_dataframe(query, pos_connection)
+    pos_df['ion_mode'] = 'Positive'
     neg_df = sql_to_dataframe(query, neg_connection)
+    neg_df['ion_mode'] = 'Negative'
     return pd.concat([pos_df, neg_df])
 
 def merge_dbs_for_conversion(annots, chebi_to_inchikey):
@@ -44,10 +46,14 @@ def merge_dbs_for_conversion(annots, chebi_to_inchikey):
                                 (annots['InChIKey'] != 'Internal Standard')]
     return valid_inchikey.merge(chebi_to_inchikey, left_on='InChIKey', right_on='structure')
 
-def make_matches_to(path_to_neg, path_to_pos, user='root', password=''):
+def make_mb_nodes_relationships(path_to_neg, path_to_pos, user='root', password=''):
     '''This function creates a .csv file corresponding to the MATCHES_TO relationship
-    in the graph database.'''
+    and a .csv corresponding to the :Metabolite node in the graph database.'''
     chebi_to_inchikey = get_inchikeys(user, password)
     all_metabolites = get_metabolites(path_to_pos, path_to_neg)
     merged_df = merge_dbs_for_conversion(all_metabolites, chebi_to_inchikey)
-    # save .csv file 
+    
+    # make .csv corresponding to :Metabolite node
+    all_metabolites.to_csv('metabolites.csv')
+    # make .csv corresponding to MATCHES_TO relationship
+    merged_df.to_csv('MATCHES_TO.csv')
