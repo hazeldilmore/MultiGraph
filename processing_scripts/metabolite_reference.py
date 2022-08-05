@@ -3,7 +3,7 @@ import pymysql
 from sqlite3 import connect
 from sqlalchemy import create_engine
 
-def make_connection_str(db, user='root', password=''):
+def make_connection_str(db, user, password):
     '''Makes connection str for given database.'''
     return 'mysql+pymysql://' + user + ':' + password + '@localhost/' + db
 
@@ -15,13 +15,14 @@ def get_inchikeys(user, password):
     '''Extract InChIKey to ChEBI dataframe through chebi's structures
     relational database.'''
     # make connection to locally installed chebi relational database
-    chebi_connection_str = make_connection_str(db='chebi')
+    chebi_connection_str = make_connection_str('chebi', user, password)
     chebi_connection = create_engine(chebi_connection_str)
 
     # select the InChIKeys
     query = "select * from structures where type='InChIKey'"
     chebi_to_inchikey = sql_to_dataframe(query, chebi_connection)
-    chebi_to_inchikey.rename(columns={'compound_id':'chebi_id'}, inplace=True)
+    chebi_to_inchikey.rename(columns={'compound_id':'chebi_id', 'structure':'InChIKey'}, 
+                             inplace=True)
     return chebi_to_inchikey[['chebi_id', 'InChIKey']]
 
 def get_metabolites(path_to_pos, path_to_neg):
@@ -44,7 +45,7 @@ def merge_dbs_for_conversion(annots, chebi_to_inchikey):
     annotations and ChEBI IDs (therefore the Reactome db).'''
     valid_inchikey = annots.loc[(annots['InChIKey']!='') & 
                                 (annots['InChIKey'] != 'Internal Standard')]
-    return valid_inchikey.merge(chebi_to_inchikey, left_on='InChIKey', right_on='structure')
+    return valid_inchikey.merge(chebi_to_inchikey, left_on='InChIKey', right_on='InChIKey')
 
 def make_mb_nodes_relationships(path_to_neg, path_to_pos, user='root', password=''):
     '''This function creates a .csv file corresponding to the MATCHES_TO relationship
